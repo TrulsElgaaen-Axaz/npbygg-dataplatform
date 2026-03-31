@@ -1,0 +1,43 @@
+{
+	"name": "smartdok_prod_workhours",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "smartdok_prod",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"fromDate": {
+				"type": "string"
+			},
+			"toDate": {
+				"type": "string"
+			},
+			"includeExported": {
+				"type": "bool",
+				"defaultValue": true
+			},
+			"includeMachineHours": {
+				"type": "bool",
+				"defaultValue": true
+			},
+			"includeWagesMarkedNoExport": {
+				"type": "bool",
+				"defaultValue": true
+			},
+			"onlyAttested": {
+				"type": "bool",
+				"defaultValue": false
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    '/WorkHours?fromDate=',\n    dataset().fromDate,\n    '&toDate=',\n    dataset().toDate,\n    '&includeExported=',\n    string(dataset().includeExported),\n    '&onlyAttested=',\n    string(dataset().onlyAttested),\n    '&includeMachineHours=',\n    string(dataset().includeMachineHours),\n    '&includeWagesMarkedNoExport=',\n    string(dataset().includeWagesMarkedNoExport)\n)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,36 @@
+{
+	"name": "Sharepoint_Graph_API",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sharepoint_graph_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"site_id": {
+				"type": "String",
+				"defaultValue": "npbyggas.sharepoint.com,641ff01a-cf6d-4346-907d-d6fea824022f,e0679fd5-30ca-4371-b6cf-50a3019a777c"
+			},
+			"list_id": {
+				"type": "String"
+			},
+			"expand": {
+				"type": "String",
+				"defaultValue": "fields"
+			},
+			"top": {
+				"type": "String",
+				"defaultValue": "1000"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    '/v1.0/sites/',\n    dataset().site_id,\n    '/lists/',\n    dataset().list_id,\n    '/items',\n    '?$expand=',\n    dataset().expand,\n    '&$top=',\n    dataset().top\n)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,35 @@
+{
+	"name": "fabric_bronze_lakehouse_viscenario",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Fabric_Bronze_Lakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"batch_id": {
+				"type": "String"
+			},
+			"object": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "LakehouseLocation",
+				"fileName": {
+					"value": "@concat(\n    dataset().batch_id,\n    '.json'\n)",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(\n    'raw/viscenario/',\n    dataset().object\n)",
+					"type": "Expression"
+				}
+			},
+			"encodingName": "UTF-8 without BOM"
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

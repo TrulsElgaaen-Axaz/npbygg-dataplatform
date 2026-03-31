@@ -1,0 +1,16 @@
+{
+	"name": "BC_Rest_GL_Accounts",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_General",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": "/v2.0/ca2597b8-97df-4a60-963b-1a77e4ca003c/production/ODataV4/Company('NP%20Bygg')/Chart_of_Accounts"
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

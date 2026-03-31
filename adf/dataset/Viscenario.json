@@ -1,0 +1,41 @@
+{
+	"name": "Viscenario",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "viscenario_rest_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"domain": {
+				"type": "String"
+			},
+			"module": {
+				"type": "String"
+			},
+			"fromDate": {
+				"type": "String"
+			},
+			"toDate": {
+				"type": "String"
+			},
+			"pageSize": {
+				"type": "string",
+				"defaultValue": "2000"
+			},
+			"pageNumber": {
+				"type": "String",
+				"defaultValue": "1"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    'workflows/f83c4b07834643c5a153cf4be03c7313/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=ObiA0_gT_54pOWM_tgx4Dv1hzm8UIlj7d76sK9-WJHg',\n    '&domain=',\n    dataset().domain,\n    '&module=',\n    dataset().module,\n    '&fromDate=',\n    dataset().fromDate,\n    '&toDate=',\n    dataset().toDate,\n    '&pageSize=',\n    dataset().pageSize,\n    '&pageNumber=',\n    dataset().pageNumber\n)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

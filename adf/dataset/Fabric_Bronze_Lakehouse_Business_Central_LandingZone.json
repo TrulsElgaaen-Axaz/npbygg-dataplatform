@@ -1,0 +1,34 @@
+{
+	"name": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Fabric_Bronze_Lakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"batch_id": {
+				"type": "String"
+			},
+			"folder_name": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "LakehouseLocation",
+				"fileName": {
+					"value": "@concat(\n    dataset().batch_id,\n    '.json'\n)",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(\n    'raw/businesscentral/',\n    dataset().folder_name\n)",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

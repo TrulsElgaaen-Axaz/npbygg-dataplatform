@@ -1,0 +1,129 @@
+{
+	"name": "Daily morning delta job",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "viscenario_load_all_module_updates",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"module_list": [
+						"tasks",
+						"checklistJob",
+						"sja",
+						"deviation",
+						"plannedTasks",
+						"ruh"
+					],
+					"viscenario_api_domain": "api.viscenario.com"
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "sharepoint_fabric_load_all_lists",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"list_ids": [
+						{
+							"site_id": "npbyggas.sharepoint.com,46c3c12b-e22d-450a-b531-daaca195a2f6,e0679fd5-30ca-4371-b6cf-50a3019a777c",
+							"lists": [
+								{
+									"name": "Vurdering",
+									"id": "47cfc0b9-14f9-4122-96d4-84601fc3c1db",
+									"expand": "fields($select=Anleggsleder,AppAuthor,AppAuthorLookupId,AppEditor,AppEditorLookupId,Attachments,Author,AuthorEmailText,AuthorLookupId,Company,CompanyID,ComplianceAssetId,ContactPerson,ContactPersonCompany,ContactPersonCompanyID,ContactPersonID,ContentType,Created,DocIcon,EMail,Edit,Editor,EditorLookupId,FolderChildCount,ID,ItemChildCount,LinkTitle,LinkTitleNoMenu,Modified,ProjectId,ProjectTitle,SubjectCategory,Title,UECommentOnReview,UEKontrahert,UERatingChoice,UeId,_ColorTag,_ComplianceFlags,_ComplianceTag,_ComplianceTagUserId,_ComplianceTagWrittenTime,_IsRecord,_UIVersionString)"
+								},
+								{
+									"name": "Sitelist",
+									"id": "f46aa501-938d-435e-a91b-ce289d736a1c",
+									"expand": "fields($select=Active,Anleggsleder,AnleggslederAssistent,AnleggslederAssistentLookupId,AnleggslederLookupId,Ansvarlig_x0020_for_x0020_fakturLookupId,Attachments,Bemanning,Ber_x00f8_rt_x0020_areal,Betalingsbetingelse,Budsjettert_x0020_omsetning_x002,Budsjettert_x0020_omsetning_x0020,By,Bygningstype_x0020_NY,Created,Dekningsbidrag_x0020_n_x00e5_v_x,Dekningsgrad,Dekningsgrad_x0020_n_x00e5_v_x00,Edit,EnterpriseType,EstimertKontrakt,Fakturert_x0020_innev_x00e6_rend,Ferdigstillelsesgrad_x0020_i_x00,Formann,Kalkulator,Prosjekteringsleder,Fremdrift_x0020_vurdering,Fritekst_x0020_fakturering,Fritekst_x0020_til_x0020_omsetni,Fritekststatustilbud,Godkjenner1,Godkjenner2,Godkjenner3,Godkjente_x0020_Endringer,HMS_x0020_Vurdering,HovedUnderProsjekt,Huskeliste_x0020_rapportering,KGAvfallProdusert,KHMS_x0020__x002d__x0020_L_x00f8,KHMS_x0020__x002d__x0020_oppf_x0,KS_x0020_vurdering,KS_x002F_HMS_x002F_Fremdrift_x00,KalkyleNr,Kg_x0020_demontert_x0020_for_x00,Kg_x0020_ombrukt_x0020_i_x0020_p,Kundenskrav,M_x00e5_ltall_x0020_dekningsgrad,Modified,Opprett_x0020_Webhotell,Oppstartsdato,Overleveringsdato,ParentSite,Postnr,ProjectAddress,ProjectNumber,ProjectType,ProsjektlederAssistentLookupId,ReferanseUtgaaendeFaktura,ReportMade,RutineFakturering,SiteAdmin,SiteCompany,SiteCompanyContactNumber,SiteCompanyContactPerson,SiteCompanyContactPersonEmail,SiteCompanyContactPersonID,SiteCompanyContactPersonPhone,SiteCompanyID,SiteCompanyOrgNo,SiteDescription,SiteLink,SiteManager,SiteRelativeUrl,SiteStatus,SiteType,Soknadspliktig,SorteringsgradAvfall,StartDate,Status_x0020_fakturering,SumKontraktsumOgEndringer,Sum_x0020_estimert_x0020_kontrak,Tegn_x0020_fremdriftsfront,Tilbudetsferdigstillelsesgrad,Tilbudsbefaring,Tilbudsfrist,Tildelingsvariant,Tilsyn,Tilsyn1,Title,Totalkostnad_x0020_m_x00e5_nedsl,Totalt_x0020_salg,Utomhus_x0020_areal,Vedst_x00e5_elsesfrist,Viscenario,WebhotelCheck,_x00d8_konomi_x0020_vurdering,id)"
+								},
+								{
+									"name": "Rapportering",
+									"id": "15df2fc2-3b18-489a-af7a-ed643114d59e",
+									"expand": "fields"
+								},
+								{
+									"name": "Sluttrapport og evaluering",
+									"id": "f5d34708-12ac-45ab-bc2e-62ff102ac869",
+									"expand": "fields"
+								},
+								{
+									"name": "users",
+									"id": "954ff7d3-43df-4e7e-843f-dec3637fadf6",
+									"expand": "fields"
+								}
+							]
+						},
+						{
+							"site_id": "npbyggas.sharepoint.com,641ff01a-cf6d-4346-907d-d6fea824022f,e0679fd5-30ca-4371-b6cf-50a3019a777c",
+							"lists": [
+								{
+									"name": "Contacts",
+									"id": "97ea24a6-242e-42db-b309-97c7476bc327",
+									"expand": "fields($select=Title,LastNamePhonetic,FirstName,FirstNamePhonetic,FullName,Email,Company,CompanyPhonetic,JobTitle,WorkPhone,HomePhone,CellPhone,WorkFax,WorkAddress,WorkCity,WorkZip,WorkCountry,WebPage,Comments,OtherAddressStreet,OtherAddressCity,OtherAddressPostalCode,OtherAddressCountry,PrimaryContact,IMAddress,MiddleName,SiteStatus,ItemBehavior,InvoSearchIndex,OrgNo,ContactRole,UserField1,UserField2,UserField3,UserField4,NameTitle,Suffix,HomeAddressStreet,HomeAddressCity,HomeAddressStateOrProvince,HomeAddressPostalCode,HomeAddressCountry,ParentContactID,SiteRelativeUrl,SiteLink,ContactStatus,Deleted,ContactID,LinkTitleNoMenu,LinkTitle,IsEmployee,EmployeeNumber,ContactNumber,SecondaryPhone,StartbankApproval,EnvironmentLighthouseApproval,ApprovalInClass,ProductXchange,FrameworkAgreement,CompanyCategories,ComplianceAssetId,MappedEntityOrgNo,PrimaryContactLookup,Betalingsbetingelser,Leverand_x00f8_rnummer,FetchFromCompany,FlowFlag,SyncID,Norsk_x002F_Utlandsregistrert_x0,UtfortPaseplikt,Pasepliktdato,LonnOgArbeidsvilkar,Svartelistet,SertifiseringerGodkjenninger,FritekstFunnKommentarer,CompanyCategoriesLookup,EmployeeStartDate,SalaryType,TempEmployee,Ansattnr,Created,Skjul,_ColorTag,Til_x0020_liste_x0020_over_x0020,Konkurs,Kundegruppe,Beredskapsrolle,Fagkategorier_x003a_Navn,Modified,ID,ContentType,Author,Editor,_UIVersionString,Attachments,Edit,DocIcon,ItemChildCount,FolderChildCount,_ComplianceFlags,_ComplianceTag,_ComplianceTagWrittenTime,_ComplianceTagUserId,_IsRecord,AppAuthor,AppEditor,Skjul)"
+								},
+								{
+									"name": "users",
+									"id": "954ff7d3-43df-4e7e-843f-dec3637fadf6",
+									"expand": "fields"
+								},
+								{
+									"name": "Relationships List",
+									"id": "0fc74adf-fd19-44f0-ba0a-3838a8a9fcf5",
+									"expand": "fields"
+								},
+								{
+									"name": "CompanyCategories",
+									"id": "f4d656ad-a629-4115-8949-6f4f620268e7",
+									"expand": "fields"
+								}
+							]
+						},
+						{
+							"site_id": "npbyggas.sharepoint.com,22fd4887-08a4-481e-84ba-0a4b6c1bcaf0,235f84db-6323-40db-a9a2-dd0c8b518951",
+							"lists": [
+								{
+									"name": "Rapporteringsgrunnlag",
+									"id": "95a2f99a-ca89-4f08-bd80-124f39c588b7",
+									"expand": "fields"
+								},
+								{
+									"name": "Rapportliste",
+									"id": "db1cab1f-4a2a-4eda-9acf-69da5084a52a",
+									"expand": "fields"
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"pipelineReference": {
+					"referenceName": "Get Smartdok workhours schedule",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2024-06-10T08:58:00",
+				"timeZone": "W. Europe Standard Time",
+				"schedule": {
+					"minutes": [
+						0
+					],
+					"hours": [
+						6
+					]
+				}
+			}
+		}
+	}
+}

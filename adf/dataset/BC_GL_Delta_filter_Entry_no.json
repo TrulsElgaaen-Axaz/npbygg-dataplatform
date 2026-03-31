@@ -1,0 +1,24 @@
+{
+	"name": "BC_GL_Delta_filter_Entry_no",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_General",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"entryNumber": {
+				"type": "int"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    '/Finansposter?$filter=Entry_No gt ', \n    string(dataset().entryNumber))",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,19 @@
+{
+	"name": "Business_Central_Connect_Dimensions_delta",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_API",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": {
+				"value": "@concat(\n    'companies(00000000-0000-0000-0000-000000000000)/dimensionValues?$expand=dimension',\n    '&$filter=lastModifiedDateTime gt ',\n    formatDateTime(addDays(utcnow(), -1), 'yyyy-MM-ddT00:00:00Z')\n)",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

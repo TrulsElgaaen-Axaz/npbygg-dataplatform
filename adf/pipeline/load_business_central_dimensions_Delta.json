@@ -1,0 +1,63 @@
+{
+	"name": "load_business_central_dimensions_Delta",
+	"properties": {
+		"activities": [
+			{
+				"name": "dimensionValues_delta_jobs",
+				"description": "Gather ",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ODataSource",
+						"httpRequestTimeout": "00:05:00"
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Business_Central_Connect_Dimensions_delta",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							},
+							"folder_name": {
+								"value": "@concat('dimensionValues/', formatDateTime(utcnow(), 'yyyy-MM-dd'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-02-26T11:20:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

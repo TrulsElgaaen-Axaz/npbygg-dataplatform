@@ -1,0 +1,248 @@
+{
+	"name": "viscenario_load_all_module_updates",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Viscenario Credentials",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://npbygg-lakehouse-secrets.vault.azure.net/secrets/viscenario-api-credentials-prod/af59be76e235461a878efd7e70b598cc?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get Access Token",
+				"description": "This activity uses a proxy logic app to get the access token because Data Factory is incapable of parsing the response body. It is encoded as us-ascii which for some reason is impossible for Data Factory to read, but logic apps has no problem. I think it is because Viscenario does not inform of the character encoding in the response headers so Data Factory assumes utf-8, and it is seemingly impossible to override this behaviour. ",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get Viscenario Credentials",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": true
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/json"
+					},
+					"url": "https://prod-04.norwayeast.logic.azure.com:443/workflows/38f8acdffdc146e1876cd361634fbea7/triggers/When_a_HTTP_request_is_received/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2FWhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=Ra6Mmm1bDq8fPlf6Iwm-5Jar6cp9znur93Gvt9A8CrE",
+					"body": {
+						"value": "@concat(\n    '{\"apiDomain\":\"',\n    pipeline().parameters.viscenario_api_domain,\n    '\",\"clientId\":\"',\n    json(activity('Get Viscenario Credentials').output.value).client_id,\n    '\",\"clientSecret\":\"',\n    json(activity('Get Viscenario Credentials').output.value).client_secret,\n    '\"}'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "For each module",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get Access Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "If full refresh",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.module_list",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "Load module updates",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "viscenario_load_module_updates",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"viscenario_api_domain": {
+										"value": "@pipeline().parameters.viscenario_api_domain",
+										"type": "Expression"
+									},
+									"module": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"from_date": {
+										"value": "@variables('from_date')",
+										"type": "Expression"
+									},
+									"to_date": {
+										"value": "@string('')",
+										"type": "Expression"
+									},
+									"page_size": "5000",
+									"batch_id": {
+										"value": "@pipeline().TriggerId",
+										"type": "Expression"
+									},
+									"viscenario_access_token": {
+										"value": "@json(activity('Get Access Token').output.response)[0].accessToken",
+										"type": "Expression"
+									},
+									"load_started_at": {
+										"value": "@pipeline().TriggerTime",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "If full refresh",
+				"type": "IfCondition",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@bool(pipeline().parameters.full_refresh)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Get last successful run date",
+							"type": "Script",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "Bronze_Warehouse",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": "SELECT TOP(1)\n    load_id,\n    FORMAT(MIN(started_at), 'yyyy-MM-dd') AS min_datetime\nFROM viscenario._df_loads\nGROUP BY load_id\nORDER BY MIN(started_at) DESC\n"
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						},
+						{
+							"name": "Set from_date",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get last successful run date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "from_date",
+								"value": {
+									"value": "@activity('Get last successful run date').output.resultSets[0].rows[0].min_datetime",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Set from_date to full refresh",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "from_date",
+								"value": {
+									"value": "@string('1970-01-01')",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"module_list": {
+				"type": "Array",
+				"defaultValue": [
+					"tasks",
+					"checklistJob",
+					"sja",
+					"deviation",
+					"plannedTasks",
+					"ruh"
+				]
+			},
+			"viscenario_api_domain": {
+				"type": "string",
+				"defaultValue": "api.viscenario.com"
+			},
+			"full_refresh": {
+				"type": "string",
+				"defaultValue": "true"
+			}
+		},
+		"variables": {
+			"from_date": {
+				"type": "String",
+				"defaultValue": "1970-01-01"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-08-15T12:31:15Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

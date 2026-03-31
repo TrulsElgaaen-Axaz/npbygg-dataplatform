@@ -1,0 +1,27 @@
+{
+	"name": "sharepoint_list_details",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "sharepoint_graph_api",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"site_id": {
+				"type": "String"
+			},
+			"list_id": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    '/v1.0/sites/',\n    dataset().site_id,\n    '/lists/',\n    dataset().list_id,\n    '?$expand=columns'\n)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

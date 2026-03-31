@@ -1,0 +1,19 @@
+{
+	"name": "BC_Rest_GL_delta_inc_dims",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_Rest",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    'companies(00000000-0000-0000-0000-000000000000)/generalLedgerEntries?$expand=account,dimensionSetLines,attachments',\n    '&$filter=lastModifiedDateTime gt ',\n    formatDateTime(addDays(utcnow(), -5), 'yyyy-MM-ddT00:00:00Z')\n)\n",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

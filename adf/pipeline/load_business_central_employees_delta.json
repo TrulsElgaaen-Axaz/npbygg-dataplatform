@@ -1,0 +1,109 @@
+{
+	"name": "load_business_central_employees_delta",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Employees Delta",
+				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ODataSource",
+						"httpRequestTimeout": "00:05:00"
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Business_Central_Connect_Employees",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							},
+							"folder_name": {
+								"value": "@concat('Employees/', formatDateTime(utcnow(), 'yyyy-MM-dd'))",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Get Employees Odata",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ODataSource",
+						"httpRequestTimeout": "00:05:00"
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Business_Central_Connect_Employees",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": "@pipeline().TriggerId",
+							"folder_name": "@concat('Employees/', formatDateTime(utcnow(), 'yyyy-MM-dd'))"
+						}
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2025-02-27T12:35:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,29 @@
+{
+	"name": "fabric_bronze_smartdok_workhours",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Fabric_Bronze_Lakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"run_id": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "LakehouseLocation",
+				"fileName": {
+					"value": "@concat(\n    dataset().run_id,\n    '.json'\n)",
+					"type": "Expression"
+				},
+				"folderPath": "raw/smartdok/workhours"
+			},
+			"encodingName": "UTF-8 without BOM"
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

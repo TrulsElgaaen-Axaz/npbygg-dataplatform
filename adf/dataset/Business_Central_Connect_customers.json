@@ -1,0 +1,16 @@
+{
+	"name": "Business_Central_Connect_customers",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_API",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": "Kunder"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

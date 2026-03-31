@@ -1,0 +1,17 @@
+{
+	"name": "Bronze_Warehouse",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "Warehouse",
+		"typeProperties": {
+			"endpoint": "xclslsw7s5qevfr3dj36jsqahq-2xxwo4566ytunowktq7632sdlq.datawarehouse.fabric.microsoft.com",
+			"artifactId": "ce31c53a-6f0d-4a18-adfb-f0f6766b227f",
+			"workspaceId": "7367efd5-f6be-4627-baca-9c3fedea435c",
+			"tenant": "ca2597b8-97df-4a60-963b-1a77e4ca003c",
+			"servicePrincipalCredentialType": "ServicePrincipalKey",
+			"servicePrincipalId": "54fcb9cb-6e9f-4681-94a2-a84fbf75c9c2",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDJFMDRDNDVDLUNEQTktNDhDQS1BRTRGLUUwRjU0QjFCNkUzMF84MWE2NzRkNy0wY2QxLTQzYmYtYjI0Ni04ZDY0N2NhMTI1YWMiDQp9"
+		}
+	}
+}

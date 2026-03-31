@@ -1,0 +1,182 @@
+{
+	"name": "Get Smartdok workhours",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get SmartDok workhours",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Get access token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "@concat(\n    'Bearer ',\n    string(json(activity('Get access token').output.response))\n )",
+								"type": "Expression"
+							}
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "smartdok_prod_workhours",
+						"type": "DatasetReference",
+						"parameters": {
+							"fromDate": {
+								"value": "@pipeline().parameters.from_date",
+								"type": "Expression"
+							},
+							"toDate": {
+								"value": "@pipeline().parameters.to_date",
+								"type": "Expression"
+							},
+							"includeExported": true,
+							"includeMachineHours": true,
+							"includeWagesMarkedNoExport": true,
+							"onlyAttested": false
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "fabric_bronze_smartdok_workhours",
+						"type": "DatasetReference",
+						"parameters": {
+							"run_id": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Get SmartDok credentials",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://npbygg-lakehouse-secrets.vault.azure.net/secrets/SmartDok-api-key/dbd08dec944f4d5f840550c2af1f50b3?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get access token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get SmartDok credentials",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": "https://api.smartdok.no/Authorize/ApiToken",
+					"body": {
+						"value": "@concat(\n    '{\"Token\":\"',\n    activity('Get SmartDok credentials').output.value,\n    '\"}'\n)\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Update load metadata table",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Get SmartDok workhours",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Bronze_Warehouse",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": {
+								"value": "@concat(\n    'INSERT INTO smartdok._df_loads (\n        load_id,\n        started_at,\n        filter_from_date,\n        filter_to_date,\n        load_type\n    )\n    VALUES (''',\n    pipeline().RunId,\n    ''', ''',\n    pipeline().TriggerTime,\n    ''', ''',\n    pipeline().parameters.from_date,\n    ''', ''',\n    pipeline().parameters.to_date,\n    ''', ''',\n    pipeline().parameters.load_type,\n    ''');'\n)",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"from_date": {
+				"type": "string"
+			},
+			"to_date": {
+				"type": "string"
+			},
+			"load_type": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-09-15T21:14:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

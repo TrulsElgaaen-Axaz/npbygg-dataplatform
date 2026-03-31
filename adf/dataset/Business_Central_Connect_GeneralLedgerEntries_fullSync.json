@@ -1,0 +1,19 @@
+{
+	"name": "Business_Central_Connect_GeneralLedgerEntries_fullSync",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_API",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": {
+				"value": "@concat(\n    'companies(00000000-0000-0000-0000-000000000000)/generalLedgerEntries?$expand=dimensionSetLines,account,attachments'\n)\n",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

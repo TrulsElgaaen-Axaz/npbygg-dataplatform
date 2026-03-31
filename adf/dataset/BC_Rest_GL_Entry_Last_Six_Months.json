@@ -1,0 +1,19 @@
+{
+	"name": "BC_Rest_GL_Entry_Last_Six_Months",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_General",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "/v2.0/ca2597b8-97df-4a60-963b-1a77e4ca003c/production/ODataV4/Company('NP%20Bygg')/Finansposter?$filter=Posting_Date ge @{formatDateTime(addDays(utcNow(), -182), 'yyyy-MM-dd')}",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,38 @@
+{
+	"name": "Fabric_Bronze_Lakehouse",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Fabric_Bronze_Lakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"list_id": {
+				"type": "String"
+			},
+			"batch_id": {
+				"type": "String"
+			},
+			"site_id": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "LakehouseLocation",
+				"fileName": {
+					"value": "@concat(\n    dataset().batch_id,\n    '.json'\n)",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat(\n    'raw/sharepoint/site/',\n    dataset().site_id,\n    '/list/',\n    dataset().list_id,\n    '/item'\n)",
+					"type": "Expression"
+				}
+			},
+			"encodingName": "UTF-8 without BOM"
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

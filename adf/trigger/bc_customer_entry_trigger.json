@@ -1,0 +1,24 @@
+{
+	"name": "bc_customer_entry_trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "R_load_business_central_customer_entry",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2025-03-14T05:00:00",
+				"timeZone": "W. Europe Standard Time"
+			}
+		}
+	}
+}

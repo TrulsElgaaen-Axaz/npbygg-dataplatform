@@ -1,0 +1,9 @@
+{
+	"name": "lakehouse-ingestion",
+	"location": "norwayeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "42c3fc2a-f07f-4335-af65-906e591432e5",
+		"tenantId": "ca2597b8-97df-4a60-963b-1a77e4ca003c"
+	}
+}

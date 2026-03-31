@@ -1,0 +1,251 @@
+{
+	"name": "append_to_onelake_file",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get file",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get Access Token",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"headers": {
+						"Authorization": {
+							"value": "@concat(\n    'Bearer ',\n    activity('Get Access Token').output.access_token\n)",
+							"type": "Expression"
+						}
+					},
+					"url": {
+						"value": "@concat(\n    'https://onelake.dfs.fabric.microsoft.com/',\n    pipeline().parameters.workspace_id,\n    '/',\n    pipeline().parameters.lakehouse_id,\n    '/Files/',\n    pipeline().parameters.file_path\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get SP Credentials",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://npbygg-lakehouse-secrets.vault.azure.net/secrets/lakehouse-data-load-sp-credentials/f206f6fdd75f4aa3ac8129805dbff022?api-version=7.0",
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "Get Access Token",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get SP Credentials",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": true,
+					"secureInput": true
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"headers": {
+						"Content-Type": "application/x-www-form-urlencoded"
+					},
+					"url": {
+						"value": "@concat(\n    'https://login.microsoftonline.com/',\n    json(activity('Get SP Credentials').output.value).tenant_id,\n    '/oauth2/v2.0/token'\n)",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "@concat(\n    'grant_type=client_credentials',\n    '&client_id=',\n    json(activity('Get SP Credentials').output.value).client_id,\n    '&client_secret=',\n    json(activity('Get SP Credentials').output.value).client_secret,\n    '&scope=https://storage.azure.com/.default'\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Append to file",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Get file",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat(\n    'Bearer ',\n    activity('Get Access Token').output.access_token\n)",
+							"type": "Expression"
+						}
+					},
+					"url": {
+						"value": "@concat(\n    'https://onelake.dfs.fabric.microsoft.com/',\n    pipeline().parameters.workspace_id,\n    '/',\n    pipeline().parameters.lakehouse_id,\n    '/Files/',\n    pipeline().parameters.file_path,\n    '?action=append',\n    '&position=',\n    activity('Get file').output.ADFWebActivityResponseHeaders['Content-Length']\n)",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "@pipeline().parameters.text_to_append",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Flush file",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "Set old content length",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set new content length",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Append to file",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "PATCH",
+					"headers": {
+						"Authorization": {
+							"value": "@concat(\n    'Bearer ',\n    activity('Get Access Token').output.access_token\n)",
+							"type": "Expression"
+						}
+					},
+					"url": {
+						"value": "@concat(\n    'https://onelake.dfs.fabric.microsoft.com/',\n    pipeline().parameters.workspace_id,\n    '/',\n    pipeline().parameters.lakehouse_id,\n    '/Files/',\n    pipeline().parameters.file_path,\n    '?action=flush',\n    '&position=',\n    string(add(\n        variables('old_content_size'),\n        variables('new_content_size')\n    ))\n)",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "@string('')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set old content length",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get file",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "old_content_size",
+					"value": {
+						"value": "@int(\n    activity('Get file').output.ADFWebActivityResponseHeaders['Content-Length']\n)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set new content length",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "new_content_size",
+					"value": {
+						"value": "@length(pipeline().parameters.text_to_append)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"workspace_id": {
+				"type": "string",
+				"defaultValue": "7367efd5-f6be-4627-baca-9c3fedea435c"
+			},
+			"lakehouse_id": {
+				"type": "string",
+				"defaultValue": "bde639cd-ac0f-47fe-953a-c7629665342e"
+			},
+			"file_path": {
+				"type": "string",
+				"defaultValue": "raw/sharepoint/test.csv"
+			},
+			"text_to_append": {
+				"type": "string",
+				"defaultValue": "2349uabwfd,0"
+			}
+		},
+		"variables": {
+			"old_content_size": {
+				"type": "Integer"
+			},
+			"new_content_size": {
+				"type": "Integer"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-06-05T11:46:02Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

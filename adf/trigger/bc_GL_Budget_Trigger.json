@@ -1,0 +1,24 @@
+{
+	"name": "bc_GL_Budget_Trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "O_load_business_central_gl_budget",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2025-03-14T05:00:00",
+				"timeZone": "W. Europe Standard Time"
+			}
+		}
+	}
+}

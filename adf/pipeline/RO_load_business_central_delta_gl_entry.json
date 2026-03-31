@@ -1,0 +1,158 @@
+{
+	"name": "RO_load_business_central_delta_gl_entry",
+	"properties": {
+		"description": "This pipeline loads general ledger entries from Business Central. It retrieves the latest entries by dynamically filtering based on the lowest entry number since yesterday, ensuring only new or updated data is processed. The pipeline consists of three activities: fetching the latest entry number, setting the entry number as a variable, and copying the filtered data into the Lakehouse for further processing.",
+		"activities": [
+			{
+				"name": "Copy General Ledger Entries",
+				"description": "This activity copies general ledger entries from Business Central where the entry number is greater than the previously retrieved entry number. It uses the dynamic filter to load the latest data from the 'Finansposter' endpoint, starting from the lowest entry number found since yesterday.",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "@{concat(\r\n    'Company(''NP%20Bygg'')/Finansposter?$top=1&$filter=Entry_No gt ', \r\n    string('<entryNumber>'))}"
+					},
+					{
+						"name": "Destination",
+						"value": "@{concat(\n    'raw/businesscentral/',\n    'GL_Entry_delta'\n)}/@{concat(\n    pipeline().TriggerId,\n    '.json'\n)}"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"metadata": [
+								{
+									"name": "Timestamp",
+									"value": {
+										"value": "@pipeline().TriggerTime",
+										"type": "Expression"
+									}
+								}
+							]
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BC_GL_Delta_filter_Entry_no",
+						"type": "DatasetReference",
+						"parameters": {
+							"entryNumber": {
+								"value": "@variables('entryNumber')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": {
+								"value": "@pipeline().TriggerId",
+								"type": "Expression"
+							},
+							"folder_name": "GL_Entry_delta"
+						}
+					}
+				]
+			},
+			{
+				"name": "Get Entry Number",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"headers": {
+						"Content-Type": "application/json",
+						"Accept": "application/json"
+					},
+					"url": {
+						"value": "@concat(\n    'https://t1012121.dynamicstocloud.com:1103/ST-142091/api/v2.0/companies(00000000-0000-0000-0000-000000000000)/generalLedgerEntries?$filter=lastModifiedDateTime gt ',\n    formatDateTime(addDays(utcnow(), -1), 'yyyy-MM-dd'),\n    'T00:00:00Z&$top=1&$select=entryNumber'\n)\n\n",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "Basic",
+						"username": "axaz",
+						"password": {
+							"type": "SecureString",
+							"value": "**********"
+						}
+					}
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Entry Number",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "entryNumber",
+					"value": {
+						"value": "@activity('Get Entry Number').output.value[0].entryNumber",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"entryNumber": {
+				"type": "Integer",
+				"defaultValue": 1280559
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-03-06T13:35:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

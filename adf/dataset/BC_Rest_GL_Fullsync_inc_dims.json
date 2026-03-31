@@ -1,0 +1,19 @@
+{
+	"name": "BC_Rest_GL_Fullsync_inc_dims",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_Rest",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@concat(\n    'companies(00000000-0000-0000-0000-000000000000)/generalLedgerEntries?$expand=account,dimensionSetLines,attachments', '&$filter=lastModifiedDateTime gt 2024-01-01T00:00:00Z and lastModifiedDateTime lt 2025-01-01T00:00:00Z'\n)",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

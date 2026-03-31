@@ -1,0 +1,240 @@
+{
+	"name": "load_sharepoint_list_items",
+	"properties": {
+		"activities": [
+			{
+				"name": "Sharepoint list -to- Fabric",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "@concat(\n    'Bearer ',\n    pipeline().parameters.sp_access_token\n)",
+								"type": "Expression"
+							}
+						},
+						"paginationRules": {
+							"AbsoluteUrl": "$['@odata.nextLink']"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings",
+							"filePattern": "setOfObjects"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Sharepoint_Graph_API",
+						"type": "DatasetReference",
+						"parameters": {
+							"site_id": {
+								"value": "@pipeline().parameters.site_id",
+								"type": "Expression"
+							},
+							"list_id": {
+								"value": "@pipeline().parameters.list_id",
+								"type": "Expression"
+							},
+							"expand": {
+								"value": "@pipeline().parameters.expand",
+								"type": "Expression"
+							},
+							"top": "1000"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse",
+						"type": "DatasetReference",
+						"parameters": {
+							"list_id": {
+								"value": "@pipeline().parameters.list_id",
+								"type": "Expression"
+							},
+							"batch_id": {
+								"value": "@pipeline().parameters.batch_id",
+								"type": "Expression"
+							},
+							"site_id": {
+								"value": "@pipeline().parameters.site_id",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Update List data file",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Authorization": {
+								"value": "@concat(\n    'Bearer ',\n    pipeline().parameters.sp_access_token\n)",
+								"type": "Expression"
+							}
+						},
+						"paginationRules": {
+							"AbsoluteUrl": "$['@odata.nextLink']"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings",
+							"filePattern": "setOfObjects"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "sharepoint_list_details",
+						"type": "DatasetReference",
+						"parameters": {
+							"site_id": {
+								"value": "@pipeline().parameters.site_id",
+								"type": "Expression"
+							},
+							"list_id": {
+								"value": "@pipeline().parameters.list_id",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "fabric_bronze_lakehouse_list_details",
+						"type": "DatasetReference",
+						"parameters": {
+							"site_id": {
+								"value": "@pipeline().parameters.site_id",
+								"type": "Expression"
+							},
+							"list_id": {
+								"value": "@pipeline().parameters.list_id",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Update load metadata table",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Sharepoint list -to- Fabric",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Bronze_Warehouse",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": {
+								"value": "@concat(\n    'INSERT INTO sharepoint._df_loads (\n        load_id,\n        started_at,\n        site_id,\n        list_id,\n        filter_from_date,\n        filter_to_date,\n        page_size,\n        number_of_pages\n    )\n    VALUES (''',\n    pipeline().parameters.batch_id,\n    ''',''',\n    pipeline().parameters.batch_timestamp,\n    ''',''',\n    pipeline().parameters.site_id,\n    ''',''',\n    pipeline().parameters.list_id,\n    ''',',\n    if(equals(pipeline().parameters.from_date, ''), 'NULL', concat('''', pipeline().parameters.from_date, '''')),\n    ',',\n    if(equals(pipeline().parameters.to_date, ''), 'NULL', concat('''', pipeline().parameters.to_date, '''')),\n    ',',\n    '1000',\n    ',',\n    activity('Sharepoint list -to- Fabric').output.rowsCopied,\n    ');'\n)",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"concurrency": 8,
+		"parameters": {
+			"batch_timestamp": {
+				"type": "String",
+				"defaultValue": "test123"
+			},
+			"batch_id": {
+				"type": "string",
+				"defaultValue": "test123"
+			},
+			"list_id": {
+				"type": "string",
+				"defaultValue": "97ea24a6-242e-42db-b309-97c7476bc327"
+			},
+			"site_id": {
+				"type": "string",
+				"defaultValue": "npbyggas.sharepoint.com,641ff01a-cf6d-4346-907d-d6fea824022f,e0679fd5-30ca-4371-b6cf-50a3019a777c"
+			},
+			"sp_access_token": {
+				"type": "securestring"
+			},
+			"from_date": {
+				"type": "string"
+			},
+			"to_date": {
+				"type": "string"
+			},
+			"expand": {
+				"type": "string",
+				"defaultValue": "fields"
+			}
+		},
+		"variables": {
+			"new_content_size": {
+				"type": "Integer"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-21T16:45:10Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

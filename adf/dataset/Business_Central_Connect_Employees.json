@@ -1,0 +1,16 @@
+{
+	"name": "Business_Central_Connect_Employees",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business Central_OData",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": "CS_Employees"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

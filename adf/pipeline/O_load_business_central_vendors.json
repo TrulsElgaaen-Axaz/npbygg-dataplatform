@@ -1,0 +1,64 @@
+{
+	"name": "O_load_business_central_vendors",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Vendors",
+				"description": "",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 3,
+					"retryIntervalInSeconds": 60,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:05:00",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "BC_Rest_vendors",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Fabric_Bronze_Lakehouse_Business_Central_LandingZone",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": "@pipeline().TriggerId",
+							"folder_name": {
+								"value": "Vendors",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2026-03-18T09:46:49Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

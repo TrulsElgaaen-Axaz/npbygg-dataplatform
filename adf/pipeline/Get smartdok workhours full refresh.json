@@ -1,0 +1,197 @@
+{
+	"name": "Get smartdok workhours full refresh",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set from date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "from_date",
+					"value": {
+						"value": "@pipeline().parameters.from_date",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Until today",
+				"type": "Until",
+				"dependsOn": [
+					{
+						"activity": "Set to date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greaterOrEquals(variables('from_date'), utcnow())",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "Get smartdok workours",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Get Smartdok workhours",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"from_date": {
+										"value": "@variables('from_date')",
+										"type": "Expression"
+									},
+									"to_date": {
+										"value": "@variables('to_date')",
+										"type": "Expression"
+									},
+									"load_type": {
+										"value": "@pipeline().parameters.load_type",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "Set temp from date",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Get smartdok workours",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "temp_from_date",
+								"value": {
+									"value": "@adddays(variables('from_date'), 91)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set new from date",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set temp from date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "from_date",
+								"value": {
+									"value": "@variables('temp_from_date')",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set new to date",
+							"type": "SetVariable",
+							"dependsOn": [
+								{
+									"activity": "Set new from date",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "to_date",
+								"value": {
+									"value": "@adddays(variables('from_date'), 90)",
+									"type": "Expression"
+								}
+							}
+						}
+					],
+					"timeout": "0.12:00:00"
+				}
+			},
+			{
+				"name": "Set to date",
+				"description": "API can only get 93 days at a time, setting a difference to 90 days",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set from date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "to_date",
+					"value": {
+						"value": "@adddays(variables('from_date'), 90)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"load_type": {
+				"type": "string",
+				"defaultValue": "full"
+			},
+			"from_date": {
+				"type": "string",
+				"defaultValue": "2019-01-01"
+			}
+		},
+		"variables": {
+			"from_date": {
+				"type": "String"
+			},
+			"to_date": {
+				"type": "String"
+			},
+			"temp_from_date": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-06-12T08:17:23Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

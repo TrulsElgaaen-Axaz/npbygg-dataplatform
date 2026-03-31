@@ -1,0 +1,16 @@
+{
+	"name": "fabric_bronze_lakehouse_sharepoint_loads",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Fabric_Bronze_Lakehouse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "LakehouseTable",
+		"schema": [],
+		"typeProperties": {
+			"table": "_df_loads"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

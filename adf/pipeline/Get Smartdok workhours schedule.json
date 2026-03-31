@@ -1,0 +1,125 @@
+{
+	"name": "Get Smartdok workhours schedule",
+	"properties": {
+		"activities": [
+			{
+				"name": "Set from date",
+				"description": "every day we get the last 7 days, every week we get the last month, every month we get the last 90 days",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set load type",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "from_date",
+					"value": {
+						"value": "@if(equals(variables('load_type'), 'quarter'), formatDateTime(addDays(utcnow(), -90), 'yyyy-MM-dd'), if(equals(variables('load_type'), 'month'), formatDateTime(addDays(utcnow(), -30), 'yyyy-MM-dd'), formatDateTime(addDays(utcnow(), -7), 'yyyy-MM-dd')))\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set to date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "to_date",
+					"value": {
+						"value": "@utcnow()",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set load type",
+				"description": "every day we get the last 7 days, every week we get the last month, every month we get the last 90 days",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "load_type",
+					"value": {
+						"value": "@if(equals(formatDateTime(utcnow(), 'dd'), formatDateTime(addDays(adddays(adddays(startOfMonth(utcnow()), -1),1),-1), 'dd')), 'quarter', if(equals(dayOfWeek(utcnow()), 1), 'month', 'week'))\n",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Get Smartdok workhours",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "Set to date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Set from date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "Get Smartdok workhours",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"from_date": {
+							"value": "@variables('from_date')",
+							"type": "Expression"
+						},
+						"to_date": {
+							"value": "@variables('to_date')",
+							"type": "Expression"
+						},
+						"load_type": {
+							"value": "@variables('load_type')",
+							"type": "Expression"
+						}
+					}
+				}
+			}
+		],
+		"variables": {
+			"from_date": {
+				"type": "String"
+			},
+			"to_date": {
+				"type": "String"
+			},
+			"load_type": {
+				"type": "String",
+				"defaultValue": "weekly"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-06-12T07:44:42Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

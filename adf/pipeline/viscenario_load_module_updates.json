@@ -1,0 +1,177 @@
+{
+	"name": "viscenario_load_module_updates",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Viscenario data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:02:00",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"additionalHeaders": {
+							"Vis-Authorization": {
+								"value": "@concat(\n    'Bearer ',\n    pipeline().parameters.viscenario_access_token\n)",
+								"type": "Expression"
+							}
+						},
+						"paginationRules": {
+							"QueryParameters.{pageNumber}": "RANGE:1:100:1",
+							"MaxRequestNumber": "100",
+							"EndCondition:$.pagesLeft": "Const:0"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "LakehouseWriteSettings",
+							"copyBehavior": "FlattenHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "Viscenario",
+						"type": "DatasetReference",
+						"parameters": {
+							"domain": {
+								"value": "@pipeline().parameters.viscenario_api_domain",
+								"type": "Expression"
+							},
+							"module": {
+								"value": "@pipeline().parameters.module",
+								"type": "Expression"
+							},
+							"fromDate": {
+								"value": "@pipeline().parameters.from_date",
+								"type": "Expression"
+							},
+							"toDate": {
+								"value": "@pipeline().parameters.to_date",
+								"type": "Expression"
+							},
+							"pageSize": {
+								"value": "@pipeline().parameters.page_size",
+								"type": "Expression"
+							},
+							"pageNumber": "{pageNumber}"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "fabric_bronze_lakehouse_viscenario",
+						"type": "DatasetReference",
+						"parameters": {
+							"batch_id": {
+								"value": "@pipeline().parameters.batch_id",
+								"type": "Expression"
+							},
+							"object": {
+								"value": "@pipeline().parameters.module",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "Update load metadata table",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "Get Viscenario data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "Bronze_Warehouse",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "NonQuery",
+							"text": {
+								"value": "@concat(\n    'INSERT INTO viscenario._df_loads (\n        load_id,\n        started_at,\n        module,\n        filter_from_date,\n        filter_to_date,\n        page_size,\n        number_of_pages\n    )\n    VALUES (''',\n    pipeline().parameters.batch_id,\n    ''',''',\n    pipeline().parameters.load_started_at,\n    ''',''',\n    pipeline().parameters.module,\n    ''',''',\n    pipeline().parameters.from_date,\n    ''',',\n    if(equals(pipeline().parameters.to_date, ''), 'NULL', concat('''', pipeline().parameters.to_date, '''')),\n    ',',\n    pipeline().parameters.page_size,\n    ',',\n    activity('Get Viscenario data').output.rowsCopied,\n    ');'\n)",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
+				}
+			}
+		],
+		"parameters": {
+			"viscenario_api_domain": {
+				"type": "String",
+				"defaultValue": "api.viscenario.com"
+			},
+			"module": {
+				"type": "String",
+				"defaultValue": "deviation"
+			},
+			"from_date": {
+				"type": "String",
+				"defaultValue": "2020-01-01"
+			},
+			"to_date": {
+				"type": "String"
+			},
+			"page_size": {
+				"type": "String",
+				"defaultValue": "5000"
+			},
+			"batch_id": {
+				"type": "String"
+			},
+			"viscenario_access_token": {
+				"type": "securestring"
+			},
+			"load_started_at": {
+				"type": "String",
+				"defaultValue": "1970-01-01T00:00:00Z"
+			}
+		},
+		"variables": {
+			"page_number": {
+				"type": "Integer"
+			},
+			"max_page_number": {
+				"type": "Integer",
+				"defaultValue": 1
+			},
+			"proxy_page_number": {
+				"type": "Integer"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-06-12T13:33:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

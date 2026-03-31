@@ -1,0 +1,19 @@
+{
+	"name": "Business_Central_Connect_Projects",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_API",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": {
+				"value": "@concat('/Company(''NP%20Bygg'')/CS_Jobs')",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

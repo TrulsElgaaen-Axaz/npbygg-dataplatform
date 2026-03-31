@@ -1,0 +1,16 @@
+{
+	"name": "Business_Central_Connect_Dimensions_fullsync",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Business_Central_API",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "ODataResource",
+		"schema": [],
+		"typeProperties": {
+			"path": "companies(00000000-0000-0000-0000-000000000000)/dimensionValues?$expand=dimension"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
